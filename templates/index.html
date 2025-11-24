@@ -4,9 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRCODE</title>
+    <style>
+        div {
+            display: flex;              /* Make the div a flex container */
+            flex-direction: column;     /* Stack items vertically */
+            justify-content: center;    /* Center vertically */
+            align-items: center;        /* Center horizontally */
+            min-height: 100vh;          /* Full screen height */
+            text-align: center;         /* Center text */
+        }
+    </style>
 </head>
 <body style="background-color: black; color: white;">
-    <h1>QR Code Generator</h1>
-    <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" style="width: 200px; height: 200px;">
+    <div>
+        <h1>QR Code Generator</h1>
+        <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" style="width: 200px; height: 200px;">
+    </div>
 </body>
 </html>
