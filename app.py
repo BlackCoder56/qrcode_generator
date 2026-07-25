@@ -51,12 +51,28 @@ def submit():
 def verify(token):
     qr_code = QRCode.query.filter_by(token=token).first()
 
-    if qr_code:
-        msg = "Valid QR Code!"
-    else:
-        msg = "Invalid QR Code!"
+    if not qr_code:
+        msg = "Invalid QR Code"
     
-    return render_template('result.html', msg=msg)
+    elif qr_code.status == 'active':
+        msg = "Valid QR Code"
+    
+    elif qr_code.status == 'used':
+        msg = "This QR Code has already been used."
+    
+    elif qr_code.status == 'expired':
+        msg = "This QR Code has expired."
+    
+    elif qr_code.status == 'revoked':
+        msg = "This QR Code has been revoked."
+    
+    else:
+        msg = "Unknown QR Code status!"
+
+    return render_template(
+        'result.html',
+        msg=msg
+    )
 
 @app.route('/result', methods=['POST'])
 def result():
