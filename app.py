@@ -1,12 +1,18 @@
-from flask import Flask, render_template, request, session, url_for
+from flask import Flask, render_template, url_for
+from flask_sqlalchemy import SQLAlchemy
 import qrcode
 from io import BytesIO
 import base64
 import secrets
+from models import QRCode
+
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///qrcodes.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your-secret-key'  # Needed for session
 
+db = SQLAlchemy(app)
 
 # ---------- ROUTES ----------
 
@@ -20,31 +26,37 @@ def submit():
     # Generate a random code and save it in the session
     token = secrets.token_urlsafe(16)
 
-    session['token'] = token
+    # session['token'] = token
+    new_qrcode = QRCode(token=token)
 
-    verification_url = url_for('verify', token=token, _external=True)
+    db.session.add(new_qrcode)
+    db.session.commit()
+
+    verification_url = url_for(
+        'verify', 
+        token=token, 
+        _external=True
+    )
 
     # Generate QR code
     qr_image = generate_qrcode(verification_url)
 
     return render_template(
         'submit.html', 
-        qr_image=qr_image, 
-        token=token,
-        verification_url=verification_url
+        qr_image=qr_image
     )
 
 # ---------- Verification Route ----------
 @app.route('/verify/<token>')
 def verify(token):
-    saved_token = session.get('token')
+    qr_code = QRCode.query.filter_by(token=token).first()
 
-    if token == saved_token:
+    if qr_code:
         msg = "Valid QR Code!"
     else:
         msg = "Invalid QR Code!"
     
-    return render_template('Verify.html', msg=msg)
+    return render_template('result.html', msg=msg)
 
 @app.route('/result', methods=['POST'])
 def result():
@@ -90,3 +102,6 @@ def generate_qrcode(data):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+with app.app_context():
+    db.create_all()  # Create database tables if they don't exist
