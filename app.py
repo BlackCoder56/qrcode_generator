@@ -40,7 +40,7 @@ def submit():
     token = secrets.token_urlsafe(16)
 
     # Set expiration time for the QR code (e.g., 5 minutes from now)
-    expires_at = datetime.utcnow() + timedelta(hours=1)  # Set to 1 hour for testing purposes
+    expires_at = datetime.utcnow() + timedelta(hours=7)  # Set to 7 hours for testing purposes
 
     # session['token'] = token
     new_qrcode = QRCode(
