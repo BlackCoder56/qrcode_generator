@@ -5,7 +5,7 @@ from io import BytesIO
 import base64
 import secrets
 # from models import QRCode
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -22,6 +22,7 @@ class QRCode(db.Model):
     token = db.Column(db.String(100), unique=True, nullable=False)
     status = db.Column(db.String(20), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expired_at = db.Column(db.DateTime, nullable=False)
 
 with app.app_context():
     db.create_all()  # Create database tables if they don't exist
@@ -38,8 +39,13 @@ def submit():
     # Generate a random code and save it in the session
     token = secrets.token_urlsafe(16)
 
+    # Set expiration time for the QR code (e.g., 5 minutes from now)
+    expires_at = datetime.utcnow() + timedelta(hours=1)  # Set to 1 hour for testing purposes
+
     # session['token'] = token
-    new_qrcode = QRCode(token=token)
+    new_qrcode = QRCode(
+            token=token, expired_at=expires_at
+    )
 
     db.session.add(new_qrcode)
     db.session.commit()
@@ -55,7 +61,8 @@ def submit():
 
     return render_template(
         'submit.html', 
-        qr_image=qr_image
+        qr_image=qr_image,
+        expires_at=expires_at
     )
 
 # ---------- Verification Route ----------
@@ -67,29 +74,34 @@ def verify(token):
     # Determine the message based on the QR code status
     if not qr_code:
         msg = "Invalid QR Code"
-    
-    elif qr_code.status == 'active':
-        qr_code.status = 'used'  # Mark the QR code as used
-        db.session.commit()
-
-        msg = "Valid QR Code"
-    
+        
     elif qr_code.status == 'used':
-        msg = "This QR Code has already been used."
-    
-    elif qr_code.status == 'expired':
-        msg = "This QR Code has expired."
+        msg = "QR Code has already been used"
     
     elif qr_code.status == 'revoked':
-        msg = "This QR Code has been revoked."
+        msg = "This QR Code has been revoked"
     
+    elif datetime.utcnow() > qr_code.expired_at:
+        qr_code.status = 'expired'
+        db.session.commit()
+
+        msg = "This QR Code has expired"
+
+    elif qr_code.status == 'active':
+        # Mark the QR code as used
+        qr_code.status = 'used'
+        db.session.commit()
+
+        msg = "QR Code is valid and has been used successfully"
+
     else:
         msg = "Unknown QR Code status!"
-
+    
     return render_template(
         'result.html',
         msg=msg
     )
+   
 
 @app.route('/result', methods=['POST'])
 def result():
