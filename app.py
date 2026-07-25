@@ -69,6 +69,9 @@ def verify(token):
         msg = "Invalid QR Code"
     
     elif qr_code.status == 'active':
+        qr_code.status = 'used'  # Mark the QR code as used
+        db.session.commit()
+
         msg = "Valid QR Code"
     
     elif qr_code.status == 'used':
