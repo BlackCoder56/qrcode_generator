@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, url_for
 import qrcode
 from io import BytesIO
 import base64
-import random
+import secrets
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'  # Needed for session
@@ -18,14 +18,33 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     # Generate a random code and save it in the session
-    random_code = random.randint(1000, 9999)
-    session['random_code'] = random_code
+    token = secrets.token_urlsafe(16)
+
+    session['token'] = token
+
+    verification_url = url_for('verify', token=token, _external=True)
 
     # Generate QR code
-    qr_image = generate_qrcode(random_code)
+    qr_image = generate_qrcode(verification_url)
 
-    return render_template('submit.html', qr_image=qr_image, random_code=random_code)
+    return render_template(
+        'submit.html', 
+        qr_image=qr_image, 
+        token=token,
+        verification_url=verification_url
+    )
 
+# ---------- Verification Route ----------
+@app.route('/verify/<token>')
+def verify(token):
+    saved_token = session.get('token')
+
+    if token == saved_token:
+        msg = "Valid QR Code!"
+    else:
+        msg = "Invalid QR Code!"
+    
+    return render_template('Verify.html', msg=msg)
 
 @app.route('/result', methods=['POST'])
 def result():
@@ -58,6 +77,7 @@ def generate_qrcode(data):
     # Convert QR code image to bytes
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
+
     img_bytes = buffer.getvalue()
 
     # Encode as base64 string
