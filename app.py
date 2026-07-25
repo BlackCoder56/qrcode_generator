@@ -4,7 +4,8 @@ import qrcode
 from io import BytesIO
 import base64
 import secrets
-from models import QRCode
+# from models import QRCode
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -13,6 +14,17 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'your-secret-key'  # Needed for session
 
 db = SQLAlchemy(app)
+
+# ---------- DATABASE MODEL ---------
+
+class QRCode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(100), unique=True, nullable=False)
+    status = db.Column(db.String(20), default='active')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+with app.app_context():
+    db.create_all()  # Create database tables if they don't exist
 
 # ---------- ROUTES ----------
 
@@ -121,5 +133,3 @@ def generate_qrcode(data):
 if __name__ == '__main__':
     app.run(debug=True)
 
-with app.app_context():
-    db.create_all()  # Create database tables if they don't exist
