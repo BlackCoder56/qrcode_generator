@@ -49,8 +49,10 @@ def submit():
 # ---------- Verification Route ----------
 @app.route('/verify/<token>')
 def verify(token):
+    # Check if the QR code exists in the database
     qr_code = QRCode.query.filter_by(token=token).first()
 
+    # Determine the message based on the QR code status
     if not qr_code:
         msg = "Invalid QR Code"
     
