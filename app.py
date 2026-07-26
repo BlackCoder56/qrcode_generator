@@ -64,9 +64,13 @@ def submit():
     # Generate QR code
     qr_image = generate_qrcode(verification_url)
 
+    # add logo to QR code
+    logo_path = 'static/logo.jpg'  # Path to your logo image
+    qr_image_with_logo = add_logo_to_qrcode(qr_image, logo_path)
+
     return render_template(
         'submit.html', 
-        qr_image=qr_image,
+        qr_image=qr_image_with_logo,
         expires_at=expires_at
     )
 
@@ -163,6 +167,24 @@ def generate_qrcode(data):
 
     return img_base64
 
+
+def add_logo_to_qrcode(qr_image, logo_path):
+    """Adds a logo to the center of the QR code image."""
+    qr = qrcode.make(qr_image)
+    logo = Image.open(logo_path)
+
+    # Calculate dimensions for the logo
+    qr_width, qr_height = qr.size
+    logo_size = int(qr_width / 4)  # Logo size is 1/4th of the QR code size
+    logo = logo.resize((logo_size, logo_size))
+
+    # Calculate position to paste the logo
+    pos = ((qr_width - logo_size) // 2, (qr_height - logo_size) // 2)
+
+    # Paste the logo onto the QR code
+    qr.paste(logo, pos)
+
+    return qr
 
 # ---------- RUN APP ----------
 
