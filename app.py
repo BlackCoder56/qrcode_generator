@@ -66,58 +66,43 @@ def submit():
     )
 
 # ---------- Verification Route ----------
-# ---------- Verification Route ----------
 @app.route('/verify/<token>')
 def verify(token):
-
-    # Find QR code in the database
+    # Check if the QR code exists in the database
     qr_code = QRCode.query.filter_by(token=token).first()
 
-    # QR code does not exist
+    # Determine the message based on the QR code status
     if not qr_code:
-        status = 'invalid'
-        message = 'This QR pass could not be found.'
-
-    # QR code has already been used
+        msg = "Invalid QR Code"
+        
     elif qr_code.status == 'used':
-        status = 'used'
-        message = 'This QR pass has already been scanned and cannot be used again.'
-
-    # QR code has been revoked
+        msg = "This QR Code has already been used!"
+    
     elif qr_code.status == 'revoked':
-        status = 'revoked'
-        message = 'This QR pass has been revoked and is no longer valid.'
-
-    # QR code has expired
+        msg = "This QR Code has been revoked!"
+    
     elif datetime.utcnow() > qr_code.expired_at:
-
         qr_code.status = 'expired'
         db.session.commit()
 
-        status = 'expired'
-        message = 'This QR pass has expired and can no longer be used.'
+        msg = "This QR Code has expired!"
 
-    # QR code is active and valid
     elif qr_code.status == 'active':
-
-        # Mark QR code as used
+        # Mark the QR code as used
         qr_code.status = 'used'
         db.session.commit()
 
-        status = 'valid'
-        message = 'This QR pass is valid and has been successfully verified.'
+        msg = "Valid QR Code!"
 
-    # Unknown status
     else:
-        status = 'invalid'
-        message = 'This QR pass has an unknown status.'
-
+        msg = "Unknown QR Code status!"
+    
     return render_template(
         'result.html',
-        status=status,
-        message=message,
+        msg=msg,
         qr_code=qr_code
     )
+   
 
 # @app.route('/result', methods=['POST'])
 # def result():
