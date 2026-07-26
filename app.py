@@ -99,8 +99,7 @@ def verify(token):
     
     return render_template(
         'result.html',
-        msg=msg,
-        qr_code=qr_code
+        msg=msg
     )
    
 
