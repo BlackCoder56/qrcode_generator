@@ -7,6 +7,7 @@ import secrets
 # from models import QRCode
 from datetime import datetime, timedelta
 import pytz
+from PIL import Image
 
 # Set timezone to Uganda
 uganda_timezone = pytz.timezone('Africa/Kampala')
@@ -61,16 +62,17 @@ def submit():
         _external=True
     )
 
-    # Generate QR code
-    qr_image = generate_qrcode(verification_url)
+    # Generate QR code with logo
+    logo_path = 'static/logo.png'
 
-    # add logo to QR code
-    logo_path = 'static/logo.jpg'  # Path to your logo image
-    qr_image_with_logo = add_logo_to_qrcode(qr_image, logo_path)
+    qr_image = generate_qrcode(
+        verification_url,
+        logo_path
+    )
 
     return render_template(
         'submit.html', 
-        qr_image=qr_image_with_logo,
+        qr_image=qr_image,
         expires_at=expires_at
     )
 
@@ -151,22 +153,91 @@ def verify(token):
 
 
 # ---------- HELPER FUNCTIONS ----------
+def generate_qrcode(data, logo_path):
+    """Generate a QR code, add a logo, and return it as Base64."""
 
-def generate_qrcode(data):
-    """Generates a QR code and returns it as a base64 string."""
-    qr = qrcode.make(data)
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=4
+    )
 
-    # Convert QR code image to bytes
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    # Create QR image
+    qr_image = qr.make_image(
+        fill_color="black",
+        back_color="white"
+    ).convert("RGB")
+
+    # Open logo
+    logo = Image.open(logo_path).convert("RGBA")
+
+    # Calculate logo size
+    qr_width, qr_height = qr_image.size
+    logo_size = qr_width // 4
+
+    # Resize logo
+    logo.thumbnail((logo_size, logo_size))
+
+    # Calculate center position
+    position = (
+        (qr_width - logo.width) // 2,
+        (qr_height - logo.height) // 2
+    )
+
+    # Create white background behind logo
+    background_size = logo.width + 20
+
+    background = Image.new(
+        "RGB",
+        (background_size, background_size),
+        "white"
+    )
+
+    # Center logo on white background
+    logo_position = (
+        (background_size - logo.width) // 2,
+        (background_size - logo.height) // 2
+    )
+
+    background.paste(
+        logo,
+        logo_position,
+        logo
+    )
+
+    # Position white logo background in center of QR
+    background_position = (
+        (qr_width - background.width) // 2,
+        (qr_height - background.height) // 2
+    )
+
+    qr_image.paste(
+        background,
+        background_position
+    )
+
+    # Paste logo on top
+    qr_image.paste(
+        logo,
+        position,
+        logo
+    )
+
+    # Convert image to bytes
     buffer = BytesIO()
-    qr.save(buffer, format="PNG")
+    qr_image.save(buffer, format="PNG")
 
-    img_bytes = buffer.getvalue()
-
-    # Encode as base64 string
-    img_base64 = base64.b64encode(img_bytes).decode()
+    # Convert bytes to Base64
+    img_base64 = base64.b64encode(
+        buffer.getvalue()
+    ).decode("utf-8")
 
     return img_base64
-
 
 def add_logo_to_qrcode(qr_image, logo_path):
     """Adds a logo to the center of the QR code image."""
