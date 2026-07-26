@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 import qrcode
 from io import BytesIO
@@ -134,7 +134,10 @@ def verify(token):
 @app.route('/admin')
 def admin():
 
-    # Get the current Uganda time
+    # Get the selected status from the URL
+    status_filter = request.args.get('status', 'all')
+
+    # Get current Uganda time
     current_time = datetime.now(uganda_timezone).replace(tzinfo=None)
 
     # Get all QR codes
@@ -142,21 +145,28 @@ def admin():
         QRCode.created_at.desc()
     ).all()
 
-    # Check for expired QR codes
+    # Update expired QR codes
     for qr_code in qr_codes:
-
         if (
             qr_code.status == 'active'
             and current_time >= qr_code.expired_at
         ):
             qr_code.status = 'expired'
 
-    # Save any status changes
+    # Save status changes
     db.session.commit()
+
+    # Filter QR codes
+    if status_filter != 'all':
+        qr_codes = [
+            qr_code for qr_code in qr_codes
+            if qr_code.status == status_filter
+        ]
 
     return render_template(
         'admin.html',
-        qr_codes=qr_codes
+        qr_codes=qr_codes,
+        status_filter=status_filter
     )
 
 # ------ ---- REVOKE QR CODE ----------

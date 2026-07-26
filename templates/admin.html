@@ -125,227 +125,522 @@
 
             </div>
 
-
-         <div class="overflow-x-auto max-h-[360px] overflow-y-auto">
-
-                <table class="w-full text-left">
-
-                    <thead class="bg-gray-50 dark:bg-gray-800 sticky top-0 z-10">
-
-                        <tr>
-
-                            <th class="px-6 py-4 text-sm font-semibold">
-                                ID
-                            </th>
-
-                            <th class="px-6 py-4 text-sm font-semibold">
-                                Token
-                            </th>
-
-                            <th class="px-6 py-4 text-sm font-semibold">
-                                Status
-                            </th>
-
-                            <th class="px-6 py-4 text-sm font-semibold">
-                                Created
-                            </th>
-
-                            <th class="px-6 py-4 text-sm font-semibold">
-                                Expires
-                            </th>
-
-                            <th class="px-6 py-4 text-sm font-semibold">
-                                Actions
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody class="divide-y
-                                  divide-gray-200
-                                  dark:divide-gray-800">
-
-                        {% for qr in qr_codes %}
-
-                        <tr class="hover:bg-gray-50
-                                   dark:hover:bg-gray-800
-                                   transition">
-
-                            <td class="px-6 py-4">
-                                {{ qr.id }}
-                            </td>
-
-                            <td class="px-6 py-4
-                                       font-mono text-sm">
-
-                                {{ qr.token }}
-
-                            </td>
-
-                            <td class="px-6 py-4">
-
-                                {% if qr.status == 'active' %}
-
-                                    <span class="px-3 py-1
-                                                 rounded-full
-                                                 text-xs font-semibold
-                                                 bg-blue-100
-                                                 text-blue-700
-                                                 dark:bg-blue-950
-                                                 dark:text-blue-300">
-
-                                        Active
-
-                                    </span>
-
-                                {% elif qr.status == 'used' %}
-
-                                    <span class="px-3 py-1
-                                                 rounded-full
-                                                 text-xs font-semibold
-                                                 bg-orange-100
-                                                 text-orange-700
-                                                 dark:bg-orange-950
-                                                 dark:text-orange-300">
-
-                                        Used
-
-                                    </span>
-
-                                {% elif qr.status == 'expired' %}
-
-                                    <span class="px-3 py-1
-                                                 rounded-full
-                                                 text-xs font-semibold
-                                                 bg-red-100
-                                                 text-red-700
-                                                 dark:bg-red-950
-                                                 dark:text-red-300">
-
-                                        Expired
-
-                                    </span>
-
-                                {% elif qr.status == 'revoked' %}
-
-                                    <span class="px-3 py-1
-                                                 rounded-full
-                                                 text-xs font-semibold
-                                                 bg-gray-200
-                                                 text-gray-700
-                                                 dark:bg-gray-700
-                                                 dark:text-gray-300">
-
-                                        Revoked
-
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-                            <td class="px-6 py-4 text-sm
-                                       text-gray-600
-                                       dark:text-gray-400">
-
-                                {{ qr.created_at.strftime('%b %d, %Y %I:%M %p') }}
-
-                            </td>
-
-                            <td class="px-6 py-4 text-sm
-                                       text-gray-600
-                                       dark:text-gray-400">
-
-                                {{ qr.expired_at.strftime('%b %d, %Y %I:%M %p') }}
-
-                            </td>
-
-                            <td class="px-6 py-4">
-
-                                <div class="flex items-center gap-2">
-
-                                    <!-- View -->
-                                    <a href="{{ url_for('qr_details', qr_id=qr.id) }}"
-                                    class="px-4 py-2
-                                            rounded-lg
-                                            text-sm font-semibold
-                                            bg-blue-100
-                                            text-blue-700
-                                            hover:bg-blue-200
-                                            dark:bg-blue-950
-                                            dark:text-blue-400
-                                            dark:hover:bg-blue-900
-                                            transition">
-
-                                        View
-
-                                    </a>
-
-
-                                    <!-- Revoke -->
-                                    {% if qr.status == 'active' %}
-
-                                        <form action="{{ url_for('revoke_qr', qr_id=qr.id) }}"
-                                            method="POST"
-                                            onsubmit="return confirm('Are you sure you want to revoke this QR pass?');">
-
-                                            <button type="submit"
-                                                    class="px-4 py-2
-                                                        rounded-lg
-                                                        text-sm font-semibold
-                                                        bg-red-100
-                                                        text-red-700
-                                                        hover:bg-red-200
-                                                        dark:bg-red-950
-                                                        dark:text-red-400
-                                                        dark:hover:bg-red-900
-                                                        transition">
-
-                                                Revoke
-
-                                            </button>
-
-                                        </form>
-
-                                    {% endif %}
-
-                                </div>
-
-                            </td>
-
-                            
-
-                        </tr>
-
-                        {% else %}
-
-                        <tr>
-
-                            <td colspan="6"
-                                class="px-6 py-10
-                                       text-center
-                                       text-gray-500
-                                       dark:text-gray-400">
-
-                                No QR passes have been generated yet.
-
-                            </td>
-
-                        </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
+<!-- Table Header -->
+<!-- QR Passes Section -->
+<div class="bg-white dark:bg-gray-900
+            border border-gray-200 dark:border-gray-800
+            rounded-2xl
+            shadow-lg
+            overflow-hidden">
+
+    <!-- Header -->
+    <div class="px-5 py-4
+                border-b border-gray-200 dark:border-gray-800">
+
+        <div class="flex flex-col sm:flex-row
+                    sm:items-center
+                    sm:justify-between
+                    gap-3">
+
+            <div>
+                <h2 class="text-lg font-semibold">
+                    QR Passes
+                </h2>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Manage generated QR passes
+                </p>
+            </div>
+
+            <!-- Showing Count -->
+            <div class="text-sm
+                        text-gray-500 dark:text-gray-400">
+
+                <span id="visibleCount">
+                    {{ qr_codes|length }}
+                </span>
+
+                passes shown
 
             </div>
 
         </div>
 
+
+        <!-- Filters -->
+        <div class="mt-4
+                    flex flex-wrap
+                    items-center
+                    gap-2">
+
+            <button onclick="filterTable('all', this)"
+                    class="filter-btn active-filter
+                           px-3 py-1.5
+                           rounded-lg
+                           text-xs font-semibold
+                           bg-blue-600
+                           text-white
+                           shadow-sm
+                           transition">
+
+                All
+
+            </button>
+
+
+            <button onclick="filterTable('active', this)"
+                    class="filter-btn
+                           px-3 py-1.5
+                           rounded-lg
+                           text-xs font-semibold
+                           bg-gray-100 dark:bg-gray-800
+                           text-gray-600 dark:text-gray-300
+                           hover:bg-blue-50
+                           hover:text-blue-600
+                           transition">
+
+                Active
+
+            </button>
+
+
+            <button onclick="filterTable('used', this)"
+                    class="filter-btn
+                           px-3 py-1.5
+                           rounded-lg
+                           text-xs font-semibold
+                           bg-gray-100 dark:bg-gray-800
+                           text-gray-600 dark:text-gray-300
+                           hover:bg-orange-50
+                           hover:text-orange-600
+                           transition">
+
+                Used
+
+            </button>
+
+
+            <button onclick="filterTable('expired', this)"
+                    class="filter-btn
+                           px-3 py-1.5
+                           rounded-lg
+                           text-xs font-semibold
+                           bg-gray-100 dark:bg-gray-800
+                           text-gray-600 dark:text-gray-300
+                           hover:bg-red-50
+                           hover:text-red-600
+                           transition">
+
+                Expired
+
+            </button>
+
+
+            <button onclick="filterTable('revoked', this)"
+                    class="filter-btn
+                           px-3 py-1.5
+                           rounded-lg
+                           text-xs font-semibold
+                           bg-gray-100 dark:bg-gray-800
+                           text-gray-600 dark:text-gray-300
+                           hover:bg-gray-200
+                           transition">
+
+                Revoked
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- Scrollable Table -->
+    <div class="max-h-[250px]
+                overflow-y-auto
+                overflow-x-auto">
+
+        <table class="w-full
+                      text-left
+                      text-sm">
+
+            <!-- Sticky Header -->
+            <thead class="sticky top-0 z-10
+                           bg-gray-50
+                           dark:bg-gray-800
+                           text-gray-500
+                           dark:text-gray-400
+                           uppercase
+                           text-xs">
+
+                <tr>
+
+                    <th class="px-5 py-3">
+                        ID
+                    </th>
+
+                    <th class="px-5 py-3">
+                        Status
+                    </th>
+
+                    <th class="px-5 py-3">
+                        Created
+                    </th>
+
+                    <th class="px-5 py-3">
+                        Expires
+                    </th>
+
+                    <th class="px-5 py-3 text-right">
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <!-- Table Body -->
+            <tbody class="divide-y
+                         divide-gray-100
+                         dark:divide-gray-800">
+
+                {% for qr in qr_codes %}
+
+                <tr data-status="{{ qr.status }}"
+                    class="qr-row
+                           hover:bg-gray-50
+                           dark:hover:bg-gray-800
+                           transition">
+
+                    <td class="px-5 py-4
+                               font-medium">
+
+                        #{{ qr.id }}
+
+                    </td>
+
+
+                    <td class="px-5 py-4">
+
+                        {% if qr.status == 'active' %}
+
+                            <span class="inline-flex
+                                         items-center
+                                         px-2.5 py-1
+                                         rounded-full
+                                         text-xs font-semibold
+                                         bg-blue-100
+                                         text-blue-700
+                                         dark:bg-blue-950
+                                         dark:text-blue-300">
+
+                                Active
+
+                            </span>
+
+                        {% elif qr.status == 'used' %}
+
+                            <span class="inline-flex
+                                         items-center
+                                         px-2.5 py-1
+                                         rounded-full
+                                         text-xs font-semibold
+                                         bg-orange-100
+                                         text-orange-700
+                                         dark:bg-orange-950
+                                         dark:text-orange-300">
+
+                                Used
+
+                            </span>
+
+                        {% elif qr.status == 'expired' %}
+
+                            <span class="inline-flex
+                                         items-center
+                                         px-2.5 py-1
+                                         rounded-full
+                                         text-xs font-semibold
+                                         bg-red-100
+                                         text-red-700
+                                         dark:bg-red-950
+                                         dark:text-red-300">
+
+                                Expired
+
+                            </span>
+
+                        {% elif qr.status == 'revoked' %}
+
+                            <span class="inline-flex
+                                         items-center
+                                         px-2.5 py-1
+                                         rounded-full
+                                         text-xs font-semibold
+                                         bg-gray-200
+                                         text-gray-700
+                                         dark:bg-gray-700
+                                         dark:text-gray-300">
+
+                                Revoked
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td class="px-5 py-4
+                               text-gray-500
+                               dark:text-gray-400">
+
+                        {{ qr.created_at.strftime('%b %d, %Y %I:%M %p') }}
+
+                    </td>
+
+
+                    <td class="px-5 py-4
+                               text-gray-500
+                               dark:text-gray-400">
+
+                        {{ qr.expired_at.strftime('%b %d, %Y %I:%M %p') }}
+
+                    </td>
+
+
+                    <td class="px-5 py-4 text-right">
+
+                        <a href="{{ url_for('qr_details', qr_id=qr.id) }}"
+                           class="inline-flex
+                                  items-center
+                                  px-3 py-1.5
+                                  rounded-lg
+                                  text-xs
+                                  font-semibold
+                                  bg-blue-50
+                                  text-blue-600
+                                  hover:bg-blue-100
+                                  dark:bg-blue-950
+                                  dark:text-blue-400
+                                  dark:hover:bg-blue-900
+                                  transition">
+
+                            View
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+
+               
+
+
+<!-- Empty State -->
+<tr id="emptyState" class="hidden">
+
+    <td colspan="5" class="px-5 py-12 text-center">
+
+        <div class="flex flex-col items-center">
+
+            <!-- Icon -->
+            <div class="w-12 h-12
+                        flex items-center justify-center
+                        rounded-full
+                        bg-gray-100 dark:bg-gray-800
+                        text-gray-400 dark:text-gray-500">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="1.8"
+                     stroke="currentColor"
+                     class="w-6 h-6">
+
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M20.25 7.5l-8.25 4.5-8.25-4.5M12 12v9" />
+
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M3.75 7.5L12 3l8.25 4.5" />
+
+                </svg>
+
+            </div>
+
+
+            <!-- Message -->
+            <p id="emptyMessage"
+               class="mt-4
+                      font-semibold
+                      text-gray-700
+                      dark:text-gray-300">
+
+                No QR passes found.
+
+            </p>
+
+
+            <p class="mt-1
+                      text-sm
+                      text-gray-500
+                      dark:text-gray-400">
+
+                There are no passes matching this filter.
+
+            </p>
+
+        </div>
+
+    </td>
+
+</tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
     </main>
+
+
+
+    <script>
+
+function filterTable(status, button) {
+
+    const rows = document.querySelectorAll('.qr-row');
+    const buttons = document.querySelectorAll('.filter-btn');
+    const visibleCount = document.getElementById('visibleCount');
+
+    const emptyState = document.getElementById('emptyState');
+    const emptyMessage = document.getElementById('emptyMessage');
+
+    let count = 0;
+
+
+    // Reset buttons
+    buttons.forEach(btn => {
+
+        btn.classList.remove(
+            'active-filter',
+            'bg-blue-600',
+            'text-white',
+            'shadow-sm'
+        );
+
+        btn.classList.add(
+            'bg-gray-100',
+            'dark:bg-gray-800',
+            'text-gray-600',
+            'dark:text-gray-300'
+        );
+
+    });
+
+
+    // Activate selected button
+    button.classList.remove(
+        'bg-gray-100',
+        'dark:bg-gray-800',
+        'text-gray-600',
+        'dark:text-gray-300'
+    );
+
+    button.classList.add(
+        'active-filter',
+        'bg-blue-600',
+        'text-white',
+        'shadow-sm'
+    );
+
+
+    // Filter rows
+    rows.forEach(row => {
+
+        const rowStatus = row.dataset.status;
+
+        if (status === 'all' || rowStatus === status) {
+
+            row.style.display = '';
+            count++;
+
+        } else {
+
+            row.style.display = 'none';
+
+        }
+
+    });
+
+
+    // Update visible count
+    visibleCount.textContent = count;
+
+
+    // Show empty state if no matching rows
+    if (count === 0) {
+
+        emptyState.classList.remove('hidden');
+
+        if (status === 'all') {
+
+            emptyMessage.textContent =
+                'No QR passes have been generated yet.';
+
+        } else {
+
+            emptyMessage.textContent =
+                `No ${status} QR passes found.`;
+
+        }
+
+    } else {
+
+        emptyState.classList.add('hidden');
+
+    }
+
+}
+
+function checkInitialEmptyState() {
+
+    const rows = document.querySelectorAll('.qr-row');
+    const emptyState = document.getElementById('emptyState');
+    const emptyMessage = document.getElementById('emptyMessage');
+
+    if (rows.length === 0) {
+
+        emptyState.classList.remove('hidden');
+
+        emptyMessage.textContent =
+            'No QR passes have been generated yet.';
+
+    } else {
+
+        emptyState.classList.add('hidden');
+
+    }
+
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    checkInitialEmptyState();
+
+});
+
+</script>
+
 
 </body>
 
