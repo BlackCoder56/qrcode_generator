@@ -6,6 +6,10 @@ import base64
 import secrets
 # from models import QRCode
 from datetime import datetime, timedelta
+import pytz
+
+# Set timezone to Uganda
+uganda_timezone = pytz.timezone('Africa/Kampala')
 
 
 app = Flask(__name__)
@@ -21,7 +25,7 @@ class QRCode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.String(100), unique=True, nullable=False)
     status = db.Column(db.String(20), default='active')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(uganda_timezone))
     expired_at = db.Column(db.DateTime, nullable=False)
 
 with app.app_context():
@@ -40,11 +44,12 @@ def submit():
     token = secrets.token_urlsafe(16)
 
     # Set expiration time for the QR code (e.g., 5 minutes from now)
-    expires_at = datetime.utcnow() + timedelta(hours=7)  # Set to 7 hours for testing purposes
+    expires_at = datetime.now(uganda_timezone).replace(tzinfo=None) + timedelta(minutes=5)  # Set to 5 minutes for testing purposes
 
     # session['token'] = token
     new_qrcode = QRCode(
-            token=token, expired_at=expires_at
+            token=token,
+            expired_at=expires_at
     )
 
     db.session.add(new_qrcode)
@@ -88,7 +93,7 @@ def verify(token):
         message = 'This QR pass has been revoked and is no longer valid.'
 
     # QR code has expired
-    elif datetime.utcnow() > qr_code.expired_at:
+    elif datetime.now(uganda_timezone).replace(tzinfo=None) > qr_code.expired_at:
 
         qr_code.status = 'expired'
         db.session.commit()
