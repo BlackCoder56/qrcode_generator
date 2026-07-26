@@ -128,26 +128,26 @@ def verify(token):
         qr_code=qr_code
     )
 
-@app.route('/result', methods=['POST'])
-def result():
-    code_entered = request.form.get("generatedCode")
-    saved_code = session.get('token')
+# @app.route('/result', methods=['POST'])
+# def result():
+#     code_entered = request.form.get("generatedCode")
+#     saved_code = session.get('token')
 
-    if not code_entered:
-        return render_template('result.html', msg="Code not entered!")
+#     if not code_entered:
+#         return render_template('result.html', msg="Code not entered!")
 
-    try:
-        if int(code_entered) == int(saved_code):
-            msg = True
-        else:
-            msg = False
-    except ValueError:
-        # In case user enters non-numeric input
-        msg = False
+#     try:
+#         if int(code_entered) == int(saved_code):
+#             msg = True
+#         else:
+#             msg = False
+#     except ValueError:
+#         # In case user enters non-numeric input
+#         msg = False
 
-    session.pop('token', None) # Remove value from session
+#     session.pop('token', None) # Remove value from session
 
-    return render_template('result.html', msg=msg)
+#     return render_template('result.html', msg=msg)
 
 
 # ---------- HELPER FUNCTIONS ----------
