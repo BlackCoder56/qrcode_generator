@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QR Pass Details</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'media'
+        }
+    </script>
+</head>
+
+
+<body class="min-h-screen
+             bg-gray-50 dark:bg-gray-950
+             text-gray-900 dark:text-white
+             transition-colors duration-500">
+
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+
+
+        <!-- Back -->
+        <a href="{{ url_for('admin') }}"
+           class="inline-flex items-center
+                  text-sm font-medium
+                  text-gray-500 dark:text-gray-400
+                  hover:text-blue-600 dark:hover:text-blue-400
+                  transition-colors">
+
+            ← Back to Dashboard
+
+        </a>
+
+
+        <!-- Page Header -->
+        <div class="mt-4 mb-5">
+
+            <h1 class="text-2xl sm:text-3xl
+                       font-bold
+                       text-blue-600 dark:text-blue-400">
+
+                QR Pass Details
+
+            </h1>
+
+            <p class="mt-1
+                      text-sm
+                      text-gray-600 dark:text-gray-400">
+
+                View information and manage this QR pass.
+
+            </p>
+
+        </div>
+
+
+        <!-- Details Card -->
+        <div class="bg-white dark:bg-gray-900
+                    border border-gray-200 dark:border-gray-800
+                    rounded-2xl
+                    shadow-xl
+                    overflow-hidden">
+
+
+            <!-- Card Header -->
+            <div class="px-6 py-4
+                        border-b border-gray-200
+                        dark:border-gray-800
+                        flex items-center
+                        justify-between">
+
+                <div>
+
+                    <p class="text-xs
+                              text-gray-500 dark:text-gray-400">
+
+                        Pass ID
+
+                    </p>
+
+                    <h2 class="mt-1
+                               text-xl
+                               font-bold">
+
+                        #{{ qr_code.id }}
+
+                    </h2>
+
+                </div>
+
+
+                <!-- Status -->
+                {% if qr_code.status == 'active' %}
+
+                    <span class="px-3 py-1
+                                 rounded-full
+                                 text-xs font-semibold
+                                 bg-blue-100
+                                 text-blue-700
+                                 dark:bg-blue-950
+                                 dark:text-blue-300">
+
+                        Active
+
+                    </span>
+
+                {% elif qr_code.status == 'used' %}
+
+                    <span class="px-3 py-1
+                                 rounded-full
+                                 text-xs font-semibold
+                                 bg-orange-100
+                                 text-orange-700
+                                 dark:bg-orange-950
+                                 dark:text-orange-300">
+
+                        Used
+
+                    </span>
+
+                {% elif qr_code.status == 'expired' %}
+
+                    <span class="px-3 py-1
+                                 rounded-full
+                                 text-xs font-semibold
+                                 bg-red-100
+                                 text-red-700
+                                 dark:bg-red-950
+                                 dark:text-red-300">
+
+                        Expired
+
+                    </span>
+
+                {% elif qr_code.status == 'revoked' %}
+
+                    <span class="px-3 py-1
+                                 rounded-full
+                                 text-xs font-semibold
+                                 bg-gray-200
+                                 text-gray-700
+                                 dark:bg-gray-700
+                                 dark:text-gray-300">
+
+                        Revoked
+
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Main Content -->
+            <div class="grid lg:grid-cols-2 gap-6 p-6">
+
+
+                <!-- LEFT: QR CODE -->
+                <div class="flex flex-col items-center
+                            justify-center">
+
+                    <div class="p-3
+                                bg-white
+                                rounded-2xl
+                                border border-gray-200
+                                dark:border-gray-700
+                                shadow-lg">
+
+                        <img src="data:image/png;base64,{{ qr_image }}"
+                             alt="QR Verification Code"
+                             class="w-52 h-52 sm:w-56 sm:h-56">
+
+                    </div>
+
+                    <p class="mt-3
+                              text-xs
+                              text-center
+                              text-gray-500
+                              dark:text-gray-400">
+
+                        Scan this QR code to verify this pass.
+
+                    </p>
+
+                </div>
+
+
+                <!-- RIGHT: INFORMATION -->
+                <div class="flex flex-col
+                            justify-between
+                            space-y-4">
+
+
+                    <!-- Token -->
+                    <div>
+
+                        <p class="text-xs
+                                  font-medium
+                                  text-gray-500 dark:text-gray-400">
+
+                            Token
+
+                        </p>
+
+                        <p class="mt-1
+                                  p-2.5
+                                  rounded-lg
+                                  bg-gray-100 dark:bg-gray-800
+                                  font-mono
+                                  text-xs
+                                  break-all">
+
+                            {{ qr_code.token }}
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- Verification URL -->
+                    <div>
+
+                        <p class="text-xs
+                                  font-medium
+                                  text-gray-500 dark:text-gray-400">
+
+                            Verification URL
+
+                        </p>
+
+                        <p class="mt-1
+                                  p-2.5
+                                  rounded-lg
+                                  bg-gray-100 dark:bg-gray-800
+                                  font-mono
+                                  text-xs
+                                  break-all">
+
+                            {{ verification_url }}
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- Dates -->
+                    <div class="grid grid-cols-2 gap-4">
+
+
+                        <!-- Created -->
+                        <div>
+
+                            <p class="text-xs
+                                      font-medium
+                                      text-gray-500 dark:text-gray-400">
+
+                                Created
+
+                            </p>
+
+                            <p class="mt-1
+                                      text-sm
+                                      font-semibold">
+
+                                {{ qr_code.created_at.strftime('%b %d, %Y') }}
+
+                            </p>
+
+                            <p class="text-xs
+                                      text-gray-500 dark:text-gray-400">
+
+                                {{ qr_code.created_at.strftime('%I:%M %p') }}
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- Expiration -->
+                        <div>
+
+                            <p class="text-xs
+                                      font-medium
+                                      text-gray-500 dark:text-gray-400">
+
+                                Expires
+
+                            </p>
+
+                            <p class="mt-1
+                                      text-sm
+                                      font-semibold">
+
+                                {{ qr_code.expired_at.strftime('%b %d, %Y') }}
+
+                            </p>
+
+                            <p class="text-xs
+                                      text-gray-500 dark:text-gray-400">
+
+                                {{ qr_code.expired_at.strftime('%I:%M %p') }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Action -->
+                    <div class="pt-3
+                                border-t border-gray-200
+                                dark:border-gray-800">
+
+                        {% if qr_code.status == 'active' %}
+
+                            <form action="{{ url_for('revoke_qr', qr_id=qr_code.id) }}"
+                                  method="POST"
+                                  onsubmit="return confirm('Are you sure you want to revoke this QR pass?');">
+
+                                <button type="submit"
+                                        class="w-full
+                                               bg-red-600
+                                               hover:bg-red-700
+                                               text-white
+                                               font-semibold
+                                               py-2.5
+                                               rounded-xl
+                                               transition">
+
+                                    Revoke QR Pass
+
+                                </button>
+
+                            </form>
+
+                        {% else %}
+
+                            <div class="p-3
+                                        rounded-xl
+                                        bg-gray-50 dark:bg-gray-800
+                                        text-center
+                                        text-xs
+                                        text-gray-500
+                                        dark:text-gray-400">
+
+                                This QR pass cannot be revoked because
+                                its current status is
+                                <strong>{{ qr_code.status }}</strong>.
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+
+</html>

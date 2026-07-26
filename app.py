@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
 import qrcode
 from io import BytesIO
@@ -99,8 +99,7 @@ def verify(token):
         message = 'This QR pass has been revoked and is no longer valid.'
 
     # QR code has expired
-    elif datetime.now(uganda_timezone).replace(tzinfo=None) > qr_code.expired_at:
-
+    elif datetime.now(uganda_timezone).replace(tzinfo=None) >= qr_code.expired_at:
         qr_code.status = 'expired'
         db.session.commit()
 
@@ -129,28 +128,77 @@ def verify(token):
         qr_code=qr_code
     )
 
+################## ADMIN ROUTES ##################
 
-# @app.route('/result', methods=['POST'])
-# def result():
-#     code_entered = request.form.get("generatedCode")
-#     saved_code = session.get('token')
+# ---------- ADMIN DASHBOARD ----------
+@app.route('/admin')
+def admin():
 
-#     if not code_entered:
-#         return render_template('result.html', msg="Code not entered!")
+    # Get the current Uganda time
+    current_time = datetime.now(uganda_timezone).replace(tzinfo=None)
 
-#     try:
-#         if int(code_entered) == int(saved_code):
-#             msg = True
-#         else:
-#             msg = False
-#     except ValueError:
-#         # In case user enters non-numeric input
-#         msg = False
+    # Get all QR codes
+    qr_codes = QRCode.query.order_by(
+        QRCode.created_at.desc()
+    ).all()
 
-#     session.pop('token', None) # Remove value from session
+    # Check for expired QR codes
+    for qr_code in qr_codes:
 
-#     return render_template('result.html', msg=msg)
+        if (
+            qr_code.status == 'active'
+            and current_time >= qr_code.expired_at
+        ):
+            qr_code.status = 'expired'
 
+    # Save any status changes
+    db.session.commit()
+
+    return render_template(
+        'admin.html',
+        qr_codes=qr_codes
+    )
+
+# ------ ---- REVOKE QR CODE ----------
+@app.route('/admin/revoke/<int:qr_id>', methods=['POST'])
+def revoke_qr(qr_id):
+
+    qr_code = QRCode.query.get_or_404(qr_id)
+
+    # Only revoke if the QR code is active
+    if qr_code.status == 'active':
+        qr_code.status = 'revoked'
+        db.session.commit()
+    
+    return redirect(
+        url_for('admin')
+    )
+
+# ------------ QR CODE DETAILS
+@app.route('/admin/qr/<int:qr_id>')
+def qr_details(qr_id):
+
+    qr_code = QRCode.query.get_or_404(qr_id)
+
+    verification_url = url_for(
+        'verify',
+        token=qr_code.token,
+        _external=True
+    )
+
+    logo_path = 'static/logo.png'
+
+    qr_image = generate_qrcode(
+        verification_url,
+        logo_path
+    )
+
+    return render_template(
+        'qr_details.html',
+        qr_code=qr_code,
+        verification_url=verification_url,
+        qr_image=qr_image
+    )
 
 # ---------- HELPER FUNCTIONS ----------
 def generate_qrcode(data, logo_path):
