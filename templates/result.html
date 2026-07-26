@@ -9,7 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-        // Follow the user's system light/dark mode preference
         tailwind.config = {
             darkMode: 'media'
         }
@@ -21,225 +20,190 @@
              text-gray-900 dark:text-white
              transition-colors duration-500">
 
-    <main class="w-full max-w-lg px-6">
+    <main class="w-full max-w-md px-4">
 
         <div class="bg-white dark:bg-gray-900
                     border border-gray-200 dark:border-gray-800
                     rounded-3xl
                     shadow-xl
-                    p-8 sm:p-10
+                    p-6 sm:p-8
                     text-center">
 
             <!-- Status Icon -->
-            <div class="mx-auto mb-6
-                        w-20 h-20
+            <div class="mx-auto mb-5
+                        w-16 h-16
                         flex items-center justify-center
                         rounded-full
-                        bg-blue-100 dark:bg-blue-950
-                        text-blue-600 dark:text-blue-400">
+                        {% if status == 'valid' %}
+                            bg-blue-100 dark:bg-blue-950
+                            text-blue-600 dark:text-blue-400
+                        {% elif status == 'used' or status == 'expired' %}
+                            bg-orange-100 dark:bg-orange-950
+                            text-orange-600 dark:text-orange-400
+                        {% else %}
+                            bg-red-100 dark:bg-red-950
+                            text-red-600 dark:text-red-400
+                        {% endif %}">
 
-                {% if msg == "Valid QR Code!" %}
+                {% if status == 'valid' %}
 
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         fill="none"
-                         viewBox="0 0 24 24"
-                         stroke-width="2"
-                         stroke="currentColor"
-                         class="w-10 h-10">
+                    <span class="text-3xl">✓</span>
 
-                        <path stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M5 13l4 4L19 7" />
+                {% elif status == 'used' %}
 
-                    </svg>
+                    <span class="text-3xl">!</span>
 
-                {% elif msg == "This QR Code has already been used!" %}
+                {% elif status == 'expired' %}
 
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         fill="none"
-                         viewBox="0 0 24 24"
-                         stroke-width="2"
-                         stroke="currentColor"
-                         class="w-10 h-10">
+                    <span class="text-3xl">⌛</span>
 
-                        <path stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M12 9v3.75m0 3.75h.008v.008H12v-.008ZM10.34 3.94 2.97 17.25A1.5 1.5 0 0 0 4.28 19.5h15.44a1.5 1.5 0 0 0 1.31-2.25L13.66 3.94a1.5 1.5 0 0 0-3.32 0Z" />
+                {% elif status == 'revoked' %}
 
-                    </svg>
+                    <span class="text-3xl">×</span>
 
                 {% else %}
 
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         fill="none"
-                         viewBox="0 0 24 24"
-                         stroke-width="2"
-                         stroke="currentColor"
-                         class="w-10 h-10">
-
-                        <path stroke-linecap="round"
-                              stroke-linejoin="round"
-                              d="M6 18 18 6M6 6l12 12" />
-
-                    </svg>
+                    <span class="text-3xl">?</span>
 
                 {% endif %}
 
             </div>
 
 
-            <!-- Result Message -->
-            {% if msg == "Valid QR Code!" %}
+            <!-- Result Heading -->
+            {% if status == 'valid' %}
 
-                <h1 class="text-3xl font-bold
+                <h1 class="text-2xl sm:text-3xl
+                           font-bold
                            text-blue-600 dark:text-blue-400">
 
-                    QR Code Verified
+                    QR Pass Verified
 
                 </h1>
 
-                <p class="mt-4
-                          text-gray-600 dark:text-gray-400">
+            {% elif status == 'used' %}
 
-                    This QR pass is valid and has been successfully verified.
-
-                </p>
-
-
-            {% elif msg == "This QR Code has already been used!" %}
-
-                <h1 class="text-3xl font-bold
+                <h1 class="text-2xl sm:text-3xl
+                           font-bold
                            text-orange-600 dark:text-orange-400">
 
-                    QR Code Already Used
+                    QR Pass Already Used
 
                 </h1>
 
-                <p class="mt-4
-                          text-gray-600 dark:text-gray-400">
+            {% elif status == 'expired' %}
 
-                    This QR pass has already been scanned and cannot be used again.
-
-                </p>
-
-
-            {% elif msg == "This QR Code has expired!" %}
-
-                <h1 class="text-3xl font-bold
+                <h1 class="text-2xl sm:text-3xl
+                           font-bold
                            text-orange-600 dark:text-orange-400">
 
-                    QR Code Expired
+                    QR Pass Expired
 
                 </h1>
 
-                <p class="mt-4
-                          text-gray-600 dark:text-gray-400">
+            {% elif status == 'revoked' %}
 
-                    This QR pass is no longer valid because it has expired.
-
-                </p>
-
-
-            {% elif msg == "This QR Code has been revoked!" %}
-
-                <h1 class="text-3xl font-bold
+                <h1 class="text-2xl sm:text-3xl
+                           font-bold
                            text-red-600 dark:text-red-400">
 
-                    QR Code Revoked
+                    QR Pass Revoked
 
                 </h1>
-
-                <p class="mt-4
-                          text-gray-600 dark:text-gray-400">
-
-                    This QR pass has been disabled and can no longer be used.
-
-                </p>
-
 
             {% else %}
 
-                <h1 class="text-3xl font-bold
+                <h1 class="text-2xl sm:text-3xl
+                           font-bold
                            text-red-600 dark:text-red-400">
 
-                    Invalid QR Code
+                    Invalid QR Pass
 
                 </h1>
-
-                <p class="mt-4
-                          text-gray-600 dark:text-gray-400">
-
-                    This QR pass could not be verified. It may be invalid or no longer exist.
-
-                </p>
 
             {% endif %}
 
 
-            <!-- Status Badge -->
-            <div class="mt-6">
+            <!-- Message -->
+            <p class="mt-4
+                      text-gray-600 dark:text-gray-400
+                      leading-relaxed">
 
-                {% if msg == "Valid QR Code!" %}
+                {{ message }}
 
-                    <span class="inline-flex items-center
-                                 px-4 py-2
-                                 rounded-full
-                                 text-sm font-semibold
-                                 bg-blue-100 dark:bg-blue-950
-                                 text-blue-700 dark:text-blue-300">
-
-                        ● Valid
-
-                    </span>
-
-                {% elif msg == "This QR Code has already been used!" %}
-
-                    <span class="inline-flex items-center
-                                 px-4 py-2
-                                 rounded-full
-                                 text-sm font-semibold
-                                 bg-orange-100 dark:bg-orange-950
-                                 text-orange-700 dark:text-orange-300">
-
-                        ● Used
-
-                    </span>
-
-                {% elif msg == "This QR Code has expired!" %}
-
-                    <span class="inline-flex items-center
-                                 px-4 py-2
-                                 rounded-full
-                                 text-sm font-semibold
-                                 bg-orange-100 dark:bg-orange-950
-                                 text-orange-700 dark:text-orange-300">
-
-                        ● Expired
-
-                    </span>
-
-                {% else %}
-
-                    <span class="inline-flex items-center
-                                 px-4 py-2
-                                 rounded-full
-                                 text-sm font-semibold
-                                 bg-red-100 dark:bg-red-950
-                                 text-red-700 dark:text-red-300">
-
-                        ● Invalid
-
-                    </span>
-
-                {% endif %}
-
-            </div>
+            </p>
 
 
-            <!-- Generate New QR Pass -->
+            <!-- QR Information -->
+            {% if qr_code %}
+
+                <div class="mt-6
+                            p-4
+                            rounded-2xl
+                            bg-gray-50 dark:bg-gray-800
+                            text-left
+                            text-sm">
+
+                    <div class="flex justify-between
+                                py-2
+                                border-b border-gray-200 dark:border-gray-700">
+
+                        <span class="text-gray-500 dark:text-gray-400">
+                            Status
+                        </span>
+
+                        <span class="font-semibold
+                                     text-gray-700 dark:text-gray-300">
+
+                            {{ qr_code.status|capitalize }}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex justify-between
+                                py-2
+                                border-b border-gray-200 dark:border-gray-700">
+
+                        <span class="text-gray-500 dark:text-gray-400">
+                            Created
+                        </span>
+
+                        <span class="font-semibold
+                                     text-gray-700 dark:text-gray-300">
+
+                            {{ qr_code.created_at.strftime('%b %d, %Y %I:%M %p') }}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex justify-between py-2">
+
+                        <span class="text-gray-500 dark:text-gray-400">
+                            Expires
+                        </span>
+
+                        <span class="font-semibold
+                                     text-gray-700 dark:text-gray-300">
+
+                            {{ qr_code.expires_at.strftime('%b %d, %Y %I:%M %p') }}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- Generate New QR -->
             <form action="{{ url_for('submit') }}"
                   method="POST"
-                  class="mt-8">
+                  class="mt-6">
 
                 <button type="submit"
                         class="w-full
@@ -247,17 +211,12 @@
                                dark:bg-blue-500 dark:hover:bg-blue-600
                                text-white
                                font-semibold
-                               py-3.5 px-6
+                               py-3 px-5
                                rounded-xl
                                shadow-lg
                                shadow-blue-500/20
                                transition-all duration-300
-                               hover:-translate-y-0.5
-                               focus:outline-none
-                               focus:ring-2
-                               focus:ring-blue-500
-                               focus:ring-offset-2
-                               dark:focus:ring-offset-gray-900">
+                               hover:-translate-y-0.5">
 
                     Generate New QR Pass
 
@@ -266,13 +225,12 @@
             </form>
 
 
-            <!-- Home Link -->
+            <!-- Home -->
             <a href="{{ url_for('index') }}"
-               class="inline-block mt-5
+               class="inline-block mt-4
                       text-sm font-medium
                       text-gray-500 dark:text-gray-400
-                      hover:text-blue-600 dark:hover:text-blue-400
-                      transition-colors duration-300">
+                      hover:text-blue-600 dark:hover:text-blue-400">
 
                 ← Back to Home
 

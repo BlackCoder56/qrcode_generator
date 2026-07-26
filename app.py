@@ -68,40 +68,65 @@ def submit():
 # ---------- Verification Route ----------
 @app.route('/verify/<token>')
 def verify(token):
-    # Check if the QR code exists in the database
     qr_code = QRCode.query.filter_by(token=token).first()
 
-    # Determine the message based on the QR code status
+    # QR code does not exist
     if not qr_code:
-        msg = "Invalid QR Code"
-        
-    elif qr_code.status == 'used':
-        msg = "This QR Code has already been used!"
-    
-    elif qr_code.status == 'revoked':
-        msg = "This QR Code has been revoked!"
-    
-    elif datetime.utcnow() > qr_code.expired_at:
+        return render_template(
+            'result.html',
+            status='invalid',
+            message='This QR pass could not be found.'
+        )
+
+    # QR code has already been used
+    if qr_code.status == 'used':
+        return render_template(
+            'result.html',
+            status='used',
+            message='This QR pass has already been scanned and cannot be used again.',
+            qr_code=qr_code
+        )
+
+    # QR code was revoked
+    if qr_code.status == 'revoked':
+        return render_template(
+            'result.html',
+            status='revoked',
+            message='This QR pass has been revoked and is no longer valid.',
+            qr_code=qr_code
+        )
+
+    # QR code has expired
+    if datetime.utcnow() > qr_code.expires_at:
         qr_code.status = 'expired'
         db.session.commit()
 
-        msg = "This QR Code has expired!"
+        return render_template(
+            'result.html',
+            status='expired',
+            message='This QR pass has expired and can no longer be used.',
+            qr_code=qr_code
+        )
 
-    elif qr_code.status == 'active':
-        # Mark the QR code as used
+    # QR code is valid
+    if qr_code.status == 'active':
         qr_code.status = 'used'
         db.session.commit()
 
-        msg = "Valid QR Code!"
+        return render_template(
+            'result.html',
+            status='valid',
+            message='This QR pass is valid and has been successfully verified.',
+            qr_code=qr_code
+        )
 
-    else:
-        msg = "Unknown QR Code status!"
-    
+    # Unknown status
     return render_template(
         'result.html',
-        msg=msg
+        status='invalid',
+        message='This QR pass has an unknown status.',
+        qr_code=qr_code
     )
-   
 
 @app.route('/result', methods=['POST'])
 def result():
