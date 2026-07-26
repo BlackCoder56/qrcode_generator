@@ -76,23 +76,23 @@ def verify(token):
         msg = "Invalid QR Code"
         
     elif qr_code.status == 'used':
-        msg = "QR Code has already been used"
+        msg = "This QR Code has already been used!"
     
     elif qr_code.status == 'revoked':
-        msg = "This QR Code has been revoked"
+        msg = "This QR Code has been revoked!"
     
     elif datetime.utcnow() > qr_code.expired_at:
         qr_code.status = 'expired'
         db.session.commit()
 
-        msg = "This QR Code has expired"
+        msg = "This QR Code has expired!"
 
     elif qr_code.status == 'active':
         # Mark the QR code as used
         qr_code.status = 'used'
         db.session.commit()
 
-        msg = "QR Code is valid and has been used successfully"
+        msg = "Valid QR Code!"
 
     else:
         msg = "Unknown QR Code status!"
