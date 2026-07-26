@@ -66,63 +66,79 @@ def submit():
     )
 
 # ---------- Verification Route ----------
+# ---------- Verification Route ----------
 @app.route('/verify/<token>')
 def verify(token):
-    # Check if the QR code exists in the database
+
+    # Find QR code in the database
     qr_code = QRCode.query.filter_by(token=token).first()
 
-    # Determine the message based on the QR code status
+    # QR code does not exist
     if not qr_code:
-        msg = "Invalid QR Code"
-        
+        status = 'invalid'
+        message = 'This QR pass could not be found.'
+
+    # QR code has already been used
     elif qr_code.status == 'used':
-        msg = "This QR Code has already been used!"
-    
+        status = 'used'
+        message = 'This QR pass has already been scanned and cannot be used again.'
+
+    # QR code has been revoked
     elif qr_code.status == 'revoked':
-        msg = "This QR Code has been revoked!"
-    
+        status = 'revoked'
+        message = 'This QR pass has been revoked and is no longer valid.'
+
+    # QR code has expired
     elif datetime.utcnow() > qr_code.expired_at:
+
         qr_code.status = 'expired'
         db.session.commit()
 
-        msg = "This QR Code has expired!"
+        status = 'expired'
+        message = 'This QR pass has expired and can no longer be used.'
 
+    # QR code is active and valid
     elif qr_code.status == 'active':
-        # Mark the QR code as used
+
+        # Mark QR code as used
         qr_code.status = 'used'
         db.session.commit()
 
-        msg = "Valid QR Code!"
+        status = 'valid'
+        message = 'This QR pass is valid and has been successfully verified.'
 
+    # Unknown status
     else:
-        msg = "Unknown QR Code status!"
-    
+        status = 'invalid'
+        message = 'This QR pass has an unknown status.'
+
     return render_template(
         'result.html',
-        msg=msg
+        status=status,
+        message=message,
+        qr_code=qr_code
     )
-   
 
-@app.route('/result', methods=['POST'])
-def result():
-    code_entered = request.form.get("generatedCode")
-    saved_code = session.get('token')
+# @app.route('/result', methods=['POST'])
+# def result():
+#     code_entered = request.form.get("generatedCode")
+#     saved_code = session.get('token')
 
-    if not code_entered:
-        return render_template('result.html', msg="Code not entered!")
+#     if not code_entered:
+#         return render_template('result.html', msg="Code not entered!")
 
-    try:
-        if int(code_entered) == int(saved_code):
-            msg = True
-        else:
-            msg = False
-    except ValueError:
-        # In case user enters non-numeric input
-        msg = False
+#     try:
+#         if int(code_entered) == int(saved_code):
+#             msg = True
+#         else:
+#             msg = False
+#     except ValueError:
+#         # In case user enters non-numeric input
+#         msg = False
 
-    session.pop('token', None) # Remove value from session
+#     session.pop('token', None) # Remove value from session
 
-    return render_template('result.html', msg=msg)
+#     return render_template('result.html', msg=msg)
 
 
 # ---------- HELPER FUNCTIONS ----------
