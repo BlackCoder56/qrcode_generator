@@ -210,77 +210,77 @@ def verify(token):
     )
 
 
-@app.route("/admin/api/verify/<token>")
-def admin_verify(token):
+# @app.route("/admin/api/verify/<token>")
+# def admin_verify(token):
 
-    # Find QR code
-    qr_code = QRCode.query.filter_by(
-        token=token
-    ).first()
+#     # Find QR code
+#     qr_code = QRCode.query.filter_by(
+#         token=token
+#     ).first()
 
-    # QR code does not exist
-    if not qr_code:
+#     # QR code does not exist
+#     if not qr_code:
 
-        return {
-            "status": "invalid",
-            "message": "This QR pass could not be found."
-        }
+#         return {
+#             "status": "invalid",
+#             "message": "This QR pass could not be found."
+#         }
 
-    # Check expiration first
-    if (
-        qr_code.status == "active"
-        and now_utc() >= qr_code.expired_at
-    ):
+#     # Check expiration first
+#     if (
+#         qr_code.status == "active"
+#         and now_utc() >= qr_code.expired_at
+#     ):
 
-        qr_code.status = "expired"
-        db.session.commit()
+#         qr_code.status = "expired"
+#         db.session.commit()
 
-    # QR code already used
-    if qr_code.status == "used":
+#     # QR code already used
+#     if qr_code.status == "used":
 
-        return {
-            "status": "used",
-            "message": "This QR pass has already been scanned.",
-            "qr_id": qr_code.id
-        }
+#         return {
+#             "status": "used",
+#             "message": "This QR pass has already been scanned.",
+#             "qr_id": qr_code.id
+#         }
 
-    # QR code revoked
-    if qr_code.status == "revoked":
+#     # QR code revoked
+#     if qr_code.status == "revoked":
 
-        return {
-            "status": "revoked",
-            "message": "This QR pass has been revoked.",
-            "qr_id": qr_code.id
-        }
+#         return {
+#             "status": "revoked",
+#             "message": "This QR pass has been revoked.",
+#             "qr_id": qr_code.id
+#         }
 
-    # QR code expired
-    if qr_code.status == "expired":
+#     # QR code expired
+#     if qr_code.status == "expired":
 
-        return {
-            "status": "expired",
-            "message": "This QR pass has expired.",
-            "qr_id": qr_code.id
-        }
+#         return {
+#             "status": "expired",
+#             "message": "This QR pass has expired.",
+#             "qr_id": qr_code.id
+#         }
 
-    # QR code is active
-    if qr_code.status == "active":
+#     # QR code is active
+#     if qr_code.status == "active":
 
-        # Mark as used
-        qr_code.status = "used"
+#         # Mark as used
+#         qr_code.status = "used"
 
-        db.session.commit()
+#         db.session.commit()
 
-        return {
-            "status": "valid",
-            "message": "This QR pass is valid and has been successfully verified.",
-            "qr_id": qr_code.id
-        }
+#         return {
+#             "status": "valid",
+#             "message": "This QR pass is valid and has been successfully verified.",
+#             "qr_id": qr_code.id
+#         }
 
-    # Unknown status
-    return {
-        "status": "invalid",
-        "message": "This QR pass has an unknown status."
-    }
+#     # Unknown status
+#     return {
+#         "status": "invalid",
+#         "message": "This QR pass has an unknown status."
+#     }
 
 
 

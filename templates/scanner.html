@@ -446,7 +446,8 @@ async function verifyQRCode(
 
         const response =
             await fetch(
-                `/admin/api/verify/${token}`
+                // `/admin/api/verify/${token}`
+                `/admin/verify/${token}`
             );
 
 
