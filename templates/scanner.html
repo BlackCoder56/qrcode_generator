@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>QR Scanner</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+<div class="max-w-3xl mx-auto py-10 px-6">
+
+    <a href="{{ url_for('admin') }}"
+       class="text-blue-600">
+
+        ← Back to Dashboard
+
+    </a>
+
+    <h1 class="text-3xl font-bold mt-5">
+
+        QR Pass Scanner
+
+    </h1>
+
+    <p class="text-gray-500 mt-2">
+
+        Scan a QR pass using your webcam.
+
+    </p>
+
+    <div
+        id="reader"
+        class="mt-8
+               rounded-xl
+               overflow-hidden
+               border
+               shadow-lg">
+    </div>
+
+    <div id="scan-result"
+         class="mt-6">
+
+    </div>
+
+</div>
+
+
+<script>
+
+let html5QrCode;
+let isProcessing = false;
+
+
+function showResult(data) {
+
+    const result = document.getElementById("scan-result");
+
+    let bgColor = "bg-gray-100";
+    let textColor = "text-gray-700";
+    let icon = "ℹ️";
+
+    if (data.status === "valid") {
+
+        bgColor = "bg-green-100";
+        textColor = "text-green-700";
+        icon = "✅";
+
+    }
+
+    else if (data.status === "used") {
+
+        bgColor = "bg-orange-100";
+        textColor = "text-orange-700";
+        icon = "⚠️";
+
+    }
+
+    else if (data.status === "expired") {
+
+        bgColor = "bg-red-100";
+        textColor = "text-red-700";
+        icon = "⏰";
+
+    }
+
+    else if (data.status === "revoked") {
+
+        bgColor = "bg-gray-200";
+        textColor = "text-gray-700";
+        icon = "🚫";
+
+    }
+
+    else if (data.status === "invalid") {
+
+        bgColor = "bg-red-100";
+        textColor = "text-red-700";
+        icon = "❌";
+
+    }
+
+
+    result.innerHTML = `
+
+        <div class="p-5 rounded-2xl ${bgColor} ${textColor}">
+
+            <div class="text-3xl mb-2">
+
+                ${icon}
+
+            </div>
+
+            <h2 class="text-xl font-bold">
+
+                ${data.status.toUpperCase()}
+
+            </h2>
+
+            <p class="mt-2">
+
+                ${data.message}
+
+            </p>
+
+            ${
+                data.qr_id
+                ? `<p class="mt-2 text-sm">
+                       Pass ID: #${data.qr_id}
+                   </p>`
+                : ""
+            }
+
+        </div>
+
+    `;
+
+}
+
+
+async function verifyQRCode(decodedText) {
+
+    try {
+
+        // Extract token from scanned URL
+        const url = new URL(decodedText);
+
+        // Get token from URL
+        const pathParts = url.pathname.split("/");
+
+        const token = pathParts[pathParts.length - 1];
+
+
+        // Send token to Flask
+        const response = await fetch(
+            `/admin/api/verify/${token}`
+        );
+
+
+        // Convert response to JSON
+        const data = await response.json();
+
+
+        // Show verification result
+        showResult(data);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showResult({
+
+            status: "invalid",
+
+            message:
+                "The scanned QR code is not a valid QR pass."
+
+        });
+
+    }
+
+}
+
+
+function onScanSuccess(decodedText, decodedResult) {
+
+    // Prevent multiple scans at once
+    if (isProcessing) {
+
+        return;
+
+    }
+
+    isProcessing = true;
+
+
+    // Stop camera temporarily
+    html5QrCode.stop()
+
+        .then(() => {
+
+            // Verify QR code
+            verifyQRCode(decodedText);
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Unable to stop scanner:",
+                error
+            );
+
+        });
+
+
+    // Restart scanner after 4 seconds
+    setTimeout(() => {
+
+        isProcessing = false;
+
+        html5QrCode.start(
+
+            { facingMode: "environment" },
+
+            {
+                fps: 10,
+                qrbox: 250
+            },
+
+            onScanSuccess
+
+        );
+
+    }, 4000);
+
+}
+
+
+function onScanFailure(error) {
+
+    // Ignore scan failures.
+    // This happens continuously while
+    // the camera is searching for a QR code.
+
+}
+
+
+html5QrCode = new Html5Qrcode(
+    "reader"
+);
+
+
+html5QrCode.start(
+
+    { facingMode: "environment" },
+
+    {
+        fps: 10,
+        qrbox: 250
+    },
+
+    onScanSuccess,
+
+    onScanFailure
+
+)
+
+.catch(error => {
+
+    document.getElementById(
+        "scan-result"
+    ).innerHTML = `
+
+        <div class="p-5
+                    rounded-2xl
+                    bg-red-100
+                    text-red-700">
+
+            <h2 class="font-bold">
+
+                Camera Error
+
+            </h2>
+
+            <p class="mt-2">
+
+                Unable to access the camera.
+
+                Please make sure you have
+                given the browser permission
+                to use your camera.
+
+            </p>
+
+        </div>
+
+    `;
+
+});
+
+</script>
+
+
+</body>
+
+</html>
