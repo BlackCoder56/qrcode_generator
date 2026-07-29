@@ -311,6 +311,10 @@ def qr_details(qr_id):
         qr_image=qr_image
     )
 
+@app.route("admin/scanner")
+def scanner():
+    return render_template("scanner.html")
+
 
 # =========================================================
 # QR CODE GENERATION
